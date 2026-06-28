@@ -1,0 +1,19 @@
+{
+  "name": "red_flags",
+  "primary_key_column": "id",
+  "enable_rls": false,
+  "visibility": "POD",
+  "columns": [
+    { "name": "deal_id", "type": "UUID", "required": true, "foreign_key": { "references": "deals.id" } },
+    { "name": "flag_code", "type": "ENUM", "required": true, "options": ["debt_to_ebitda_high", "customer_concentration_high", "margins_declining", "low_growth", "negative_cash_flow", "weak_management_team", "missing_key_data", "other"] },
+    { "name": "severity", "type": "ENUM", "required": true, "options": ["low", "medium", "high"] },
+    { "name": "title", "type": "TEXT", "required": true, "max_length": 240 },
+    { "name": "reasoning", "type": "TEXT", "required": true },
+    { "name": "metric_value", "type": "TEXT", "max_length": 120 },
+    { "name": "threshold_value", "type": "TEXT", "max_length": 120 },
+    { "name": "source_page_numbers", "type": "JSON" },
+    { "name": "sort_order", "type": "INTEGER" },
+    { "name": "is_active", "type": "BOOLEAN", "required": true, "default": true }
+  ],
+  "config": {}
+}

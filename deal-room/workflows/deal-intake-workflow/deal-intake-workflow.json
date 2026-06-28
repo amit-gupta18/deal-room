@@ -1,0 +1,174 @@
+{
+  "name": "deal-intake-workflow",
+  "description": "Orchestrates CIM ingestion, financial extraction, risk scoring, memo drafting, and human review.",
+  "start": { "type": "DATASTORE_EVENT", "config": { "table_name": "deals", "operations": ["INSERT"] } },
+  "nodes": [
+    {
+      "id": "parse_cim",
+      "type": "AGENT",
+      "label": "Parse CIM document",
+      "config": {
+        "agent_name": "document-parser-agent",
+        "input_mapping": {
+          "deal_id": { "type": "expression", "value": "start.metadata.record_id" },
+          "cim_file_path": { "type": "expression", "value": "start.payload.cim_file_path" },
+          "company_name_hint": { "type": "expression", "value": "start.payload.company_name" }
+        }
+      }
+    },
+    {
+      "id": "persist_parsed_financials",
+      "type": "FUNCTION",
+      "label": "Persist parser output",
+      "config": {
+        "function_name": "persist_parser_output",
+        "input_mapping": {
+          "deal_id": { "type": "expression", "value": "start.metadata.record_id" },
+          "company_name": { "type": "expression", "value": "parse_cim.company_name", "optional": true },
+          "industry": { "type": "expression", "value": "parse_cim.industry", "optional": true },
+          "headquarters": { "type": "expression", "value": "parse_cim.headquarters", "optional": true },
+          "deal_size_ask": { "type": "expression", "value": "parse_cim.deal_size_ask", "optional": true },
+          "business_model_summary": { "type": "expression", "value": "parse_cim.business_model_summary", "optional": true },
+          "management_team_summary": { "type": "expression", "value": "parse_cim.management_team_summary", "optional": true },
+          "management_background": { "type": "expression", "value": "parse_cim.management_background", "optional": true },
+          "company_stated_risks": { "type": "expression", "value": "parse_cim.company_stated_risks", "optional": true },
+          "currency": { "type": "expression", "value": "parse_cim.currency", "optional": true },
+          "fiscal_year_1_label": { "type": "expression", "value": "parse_cim.fiscal_year_1_label", "optional": true },
+          "fiscal_year_1_revenue": { "type": "expression", "value": "parse_cim.fiscal_year_1_revenue", "optional": true },
+          "fiscal_year_1_ebitda": { "type": "expression", "value": "parse_cim.fiscal_year_1_ebitda", "optional": true },
+          "fiscal_year_1_ebitda_margin": { "type": "expression", "value": "parse_cim.fiscal_year_1_ebitda_margin", "optional": true },
+          "fiscal_year_2_label": { "type": "expression", "value": "parse_cim.fiscal_year_2_label", "optional": true },
+          "fiscal_year_2_revenue": { "type": "expression", "value": "parse_cim.fiscal_year_2_revenue", "optional": true },
+          "fiscal_year_2_ebitda": { "type": "expression", "value": "parse_cim.fiscal_year_2_ebitda", "optional": true },
+          "fiscal_year_2_ebitda_margin": { "type": "expression", "value": "parse_cim.fiscal_year_2_ebitda_margin", "optional": true },
+          "fiscal_year_3_label": { "type": "expression", "value": "parse_cim.fiscal_year_3_label", "optional": true },
+          "fiscal_year_3_revenue": { "type": "expression", "value": "parse_cim.fiscal_year_3_revenue", "optional": true },
+          "fiscal_year_3_ebitda": { "type": "expression", "value": "parse_cim.fiscal_year_3_ebitda", "optional": true },
+          "fiscal_year_3_ebitda_margin": { "type": "expression", "value": "parse_cim.fiscal_year_3_ebitda_margin", "optional": true },
+          "revenue_cagr_3y": { "type": "expression", "value": "parse_cim.revenue_cagr_3y", "optional": true },
+          "yoy_growth_latest": { "type": "expression", "value": "parse_cim.yoy_growth_latest", "optional": true },
+          "total_debt": { "type": "expression", "value": "parse_cim.total_debt", "optional": true },
+          "debt_to_ebitda": { "type": "expression", "value": "parse_cim.debt_to_ebitda", "optional": true },
+          "free_cash_flow": { "type": "expression", "value": "parse_cim.free_cash_flow", "optional": true },
+          "top_customer_name": { "type": "expression", "value": "parse_cim.top_customer_name", "optional": true },
+          "top_customer_revenue_pct": { "type": "expression", "value": "parse_cim.top_customer_revenue_pct", "optional": true },
+          "top_5_customers_revenue_pct": { "type": "expression", "value": "parse_cim.top_5_customers_revenue_pct", "optional": true },
+          "customer_concentration_summary": { "type": "expression", "value": "parse_cim.customer_concentration_summary", "optional": true },
+          "extraction_confidence": { "type": "expression", "value": "parse_cim.extraction_confidence", "optional": true },
+          "missing_fields": { "type": "expression", "value": "parse_cim.missing_fields", "optional": true },
+          "source_page_map": { "type": "expression", "value": "parse_cim.source_page_map", "optional": true }
+        }
+      }
+    },
+    {
+      "id": "score_risk",
+      "type": "AGENT",
+      "label": "Score risk and red flags",
+      "config": {
+        "agent_name": "risk-analyst-agent",
+        "input_mapping": {
+          "deal_id": { "type": "expression", "value": "start.metadata.record_id" }
+        }
+      }
+    },
+    {
+      "id": "persist_risk_assessment",
+      "type": "FUNCTION",
+      "label": "Persist risk output",
+      "config": {
+        "function_name": "persist_risk_output",
+        "input_mapping": {
+          "deal_id": { "type": "expression", "value": "start.metadata.record_id" },
+          "deal_score": { "type": "expression", "value": "score_risk.deal_score" },
+          "investment_recommendation": { "type": "expression", "value": "score_risk.investment_recommendation" },
+          "company_key_risks_summary": { "type": "expression", "value": "score_risk.company_key_risks_summary" },
+          "red_flags": { "type": "expression", "value": "score_risk.red_flags" }
+        }
+      }
+    },
+    {
+      "id": "draft_memo",
+      "type": "AGENT",
+      "label": "Draft investment memo",
+      "config": {
+        "agent_name": "memo-writer-agent",
+        "input_mapping": {
+          "deal_id": { "type": "expression", "value": "start.metadata.record_id" }
+        }
+      }
+    },
+    {
+      "id": "persist_memo",
+      "type": "FUNCTION",
+      "label": "Persist memo draft",
+      "config": {
+        "function_name": "persist_memo_draft",
+        "input_mapping": {
+          "deal_id": { "type": "expression", "value": "start.metadata.record_id" },
+          "executive_summary": { "type": "expression", "value": "draft_memo.executive_summary" },
+          "financial_highlights": { "type": "expression", "value": "draft_memo.financial_highlights" },
+          "risk_assessment": { "type": "expression", "value": "draft_memo.risk_assessment" },
+          "recommendation": { "type": "expression", "value": "draft_memo.recommendation" },
+          "recommendation_reasoning": { "type": "expression", "value": "draft_memo.recommendation_reasoning" },
+          "body_markdown": { "type": "expression", "value": "draft_memo.body_markdown" },
+          "drafted_by_agent_name": { "type": "literal", "value": "memo-writer-agent" }
+        }
+      }
+    },
+    {
+      "id": "analyst_review",
+      "type": "FORM",
+      "label": "Analyst review",
+      "config": {
+        "assignee_pod_member_id_expression": "start.payload.assigned_analyst_pod_member_id",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "decision": { "type": "string", "enum": ["approve", "reject"] },
+            "edited_body_markdown": { "type": "string" },
+            "review_notes": { "type": "string" },
+            "rejection_reason": { "type": "string" },
+            "reviewer_user_id": { "type": "string" }
+          },
+          "required": ["decision", "edited_body_markdown", "reviewer_user_id"]
+        },
+        "ui_schema": {
+          "ui:order": ["decision", "edited_body_markdown", "review_notes", "rejection_reason"]
+        }
+      }
+    },
+    {
+      "id": "record_decision",
+      "type": "FUNCTION",
+      "label": "Record review decision",
+      "config": {
+        "function_name": "record_review_decision",
+        "input_mapping": {
+          "deal_id": { "type": "expression", "value": "start.metadata.record_id" },
+          "memo_id": { "type": "expression", "value": "persist_memo.memo_id" },
+          "decision": { "type": "expression", "value": "analyst_review.decision" },
+          "edited_body_markdown": { "type": "expression", "value": "analyst_review.edited_body_markdown" },
+          "review_notes": { "type": "expression", "value": "analyst_review.review_notes", "optional": true },
+          "rejection_reason": { "type": "expression", "value": "analyst_review.rejection_reason", "optional": true },
+          "reviewer_user_id": { "type": "expression", "value": "analyst_review.reviewer_user_id" }
+        }
+      }
+    },
+    {
+      "id": "end",
+      "type": "END",
+      "label": "Done"
+    }
+  ],
+  "edges": [
+    { "id": "e1", "source": "parse_cim", "target": "persist_parsed_financials" },
+    { "id": "e2", "source": "persist_parsed_financials", "target": "score_risk" },
+    { "id": "e3", "source": "score_risk", "target": "persist_risk_assessment" },
+    { "id": "e4", "source": "persist_risk_assessment", "target": "draft_memo" },
+    { "id": "e5", "source": "draft_memo", "target": "persist_memo" },
+    { "id": "e6", "source": "persist_memo", "target": "analyst_review" },
+    { "id": "e7", "source": "analyst_review", "target": "record_decision" },
+    { "id": "e8", "source": "record_decision", "target": "end" }
+  ],
+  "visibility": "POD"
+}

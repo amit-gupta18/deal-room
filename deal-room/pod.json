@@ -1,0 +1,5 @@
+{
+  "format_version": 2,
+  "name": "deal-room",
+  "description": "AI Deal Room Operator for first-pass CIM screening, risk scoring, memo drafting, and human review."
+}

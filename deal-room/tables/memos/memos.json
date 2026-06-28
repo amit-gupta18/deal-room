@@ -1,0 +1,23 @@
+{
+  "name": "memos",
+  "primary_key_column": "id",
+  "enable_rls": false,
+  "visibility": "POD",
+  "columns": [
+    { "name": "deal_id", "type": "UUID", "required": true, "foreign_key": { "references": "deals.id" } },
+    { "name": "version_number", "type": "INTEGER", "required": true },
+    { "name": "status", "type": "ENUM", "required": true, "default": "draft", "options": ["draft", "approved", "rejected", "superseded"] },
+    { "name": "executive_summary", "type": "TEXT", "required": true },
+    { "name": "financial_highlights", "type": "TEXT", "required": true },
+    { "name": "risk_assessment", "type": "TEXT", "required": true },
+    { "name": "recommendation", "type": "ENUM", "required": true, "options": ["approve_deeper_diligence", "conditional", "reject"] },
+    { "name": "recommendation_reasoning", "type": "TEXT", "required": true },
+    { "name": "body_markdown", "type": "TEXT", "required": true },
+    { "name": "drafted_by_agent_name", "type": "TEXT", "required": true, "max_length": 120 },
+    { "name": "edited_by_user_id", "type": "USER" },
+    { "name": "approved_by_user_id", "type": "USER" },
+    { "name": "approved_at", "type": "DATETIME" },
+    { "name": "rejected_at", "type": "DATETIME" }
+  ],
+  "config": {}
+}

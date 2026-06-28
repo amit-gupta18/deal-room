@@ -1,0 +1,5 @@
+{
+  "name": "cims",
+  "description": "Uploaded CIM (Confidential Information Memorandum) PDF documents for deals under review.",
+  "path": "/deal-room/cims"
+}

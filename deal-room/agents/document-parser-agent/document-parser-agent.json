@@ -1,0 +1,50 @@
+{
+  "name": "document-parser-agent",
+  "description": "Reads a CIM document and extracts structured company and financial data.",
+  "instruction": { "$file": "instruction.md" },
+  "toolsets": ["POD"],
+  "visibility": "POD",
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "company_name": { "type": "string" },
+      "industry": { "type": "string" },
+      "headquarters": { "type": "string" },
+      "deal_size_ask": { "type": "string" },
+      "business_model_summary": { "type": "string" },
+      "management_team_summary": { "type": "string" },
+      "management_background": { "type": "string" },
+      "company_stated_risks": { "type": "string" },
+      "currency": { "type": "string" },
+      "fiscal_year_1_label": { "type": "string" },
+      "fiscal_year_1_revenue": { "type": "number" },
+      "fiscal_year_1_ebitda": { "type": "number" },
+      "fiscal_year_1_ebitda_margin": { "type": "number" },
+      "fiscal_year_2_label": { "type": "string" },
+      "fiscal_year_2_revenue": { "type": "number" },
+      "fiscal_year_2_ebitda": { "type": "number" },
+      "fiscal_year_2_ebitda_margin": { "type": "number" },
+      "fiscal_year_3_label": { "type": "string" },
+      "fiscal_year_3_revenue": { "type": "number" },
+      "fiscal_year_3_ebitda": { "type": "number" },
+      "fiscal_year_3_ebitda_margin": { "type": "number" },
+      "revenue_cagr_3y": { "type": "number" },
+      "yoy_growth_latest": { "type": "number" },
+      "total_debt": { "type": "number" },
+      "debt_to_ebitda": { "type": "number" },
+      "free_cash_flow": { "type": "number" },
+      "top_customer_name": { "type": "string" },
+      "top_customer_revenue_pct": { "type": "number" },
+      "top_5_customers_revenue_pct": { "type": "number" },
+      "customer_concentration_summary": { "type": "string" },
+      "extraction_confidence": { "type": "number" },
+      "missing_fields": { "type": "array", "items": { "type": "string" } },
+      "source_page_map": { "type": "object" }
+    },
+    "required": ["company_name", "business_model_summary", "extraction_confidence", "missing_fields", "source_page_map"]
+  },
+  "permissions": { "grants": [
+    { "resource_type": "folder", "resource_name": "/cims",
+      "permission_ids": ["folder.read"] }
+  ] }
+}

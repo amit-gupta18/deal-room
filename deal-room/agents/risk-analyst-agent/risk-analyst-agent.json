@@ -1,0 +1,38 @@
+{
+  "name": "risk-analyst-agent",
+  "description": "Reviews extracted financial data and applies PE screening judgment to score deals and identify red flags.",
+  "instruction": { "$file": "instruction.md" },
+  "toolsets": ["POD"],
+  "visibility": "POD",
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "deal_score": { "type": "integer" },
+      "investment_recommendation": { "type": "string", "enum": ["approve_deeper_diligence", "conditional", "reject"] },
+      "company_key_risks_summary": { "type": "string" },
+      "red_flags": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "flag_code": { "type": "string", "enum": ["debt_to_ebitda_high", "customer_concentration_high", "margins_declining", "low_growth", "negative_cash_flow", "weak_management_team", "missing_key_data", "other"] },
+            "severity": { "type": "string", "enum": ["low", "medium", "high"] },
+            "title": { "type": "string" },
+            "reasoning": { "type": "string" },
+            "metric_value": { "type": "string" },
+            "threshold_value": { "type": "string" },
+            "source_page_numbers": { "type": "array", "items": { "type": "integer" } }
+          },
+          "required": ["flag_code", "severity", "title", "reasoning"]
+        }
+      }
+    },
+    "required": ["deal_score", "investment_recommendation", "company_key_risks_summary", "red_flags"]
+  },
+  "permissions": { "grants": [
+    { "resource_type": "datastore_table", "resource_name": "deals",
+      "permission_ids": ["datastore.table.read", "datastore.record.read"] },
+    { "resource_type": "datastore_table", "resource_name": "financials",
+      "permission_ids": ["datastore.table.read", "datastore.record.read"] }
+  ] }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "memo-writer-agent",
+  "description": "Drafts a concise one-page investment memo from the deal's financial data and risk profile.",
+  "instruction": { "$file": "instruction.md" },
+  "toolsets": ["POD"],
+  "visibility": "POD",
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "executive_summary": { "type": "string" },
+      "financial_highlights": { "type": "string" },
+      "risk_assessment": { "type": "string" },
+      "recommendation": { "type": "string", "enum": ["approve_deeper_diligence", "conditional", "reject"] },
+      "recommendation_reasoning": { "type": "string" },
+      "body_markdown": { "type": "string" }
+    },
+    "required": ["executive_summary", "financial_highlights", "risk_assessment", "recommendation", "recommendation_reasoning", "body_markdown"]
+  },
+  "permissions": { "grants": [
+    { "resource_type": "datastore_table", "resource_name": "deals",
+      "permission_ids": ["datastore.table.read", "datastore.record.read"] },
+    { "resource_type": "datastore_table", "resource_name": "financials",
+      "permission_ids": ["datastore.table.read", "datastore.record.read"] },
+    { "resource_type": "datastore_table", "resource_name": "red_flags",
+      "permission_ids": ["datastore.table.read", "datastore.record.read"] }
+  ] }
+}

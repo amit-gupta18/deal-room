@@ -1,0 +1,16 @@
+{
+  "name": "audit_events",
+  "primary_key_column": "id",
+  "enable_rls": false,
+  "visibility": "POD",
+  "columns": [
+    { "name": "deal_id", "type": "UUID", "required": true, "foreign_key": { "references": "deals.id" } },
+    { "name": "event_type", "type": "ENUM", "required": true, "options": ["deal_created", "parser_started", "parser_completed", "parser_failed", "risk_started", "risk_completed", "risk_failed", "memo_started", "memo_drafted", "memo_failed", "review_requested", "memo_edited", "review_approved", "review_rejected", "stage_changed"] },
+    { "name": "actor_type", "type": "ENUM", "required": true, "options": ["user", "agent", "function", "workflow", "system"] },
+    { "name": "actor_name", "type": "TEXT", "required": true, "max_length": 240 },
+    { "name": "event_summary", "type": "TEXT", "required": true },
+    { "name": "event_payload", "type": "JSON" },
+    { "name": "related_memo_id", "type": "UUID" }
+  ],
+  "config": {}
+}
